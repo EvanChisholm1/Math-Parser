@@ -1,4 +1,3 @@
-const text = "1 + 10 * 12 - 2 / 34";
 type token = string | number;
 
 const ops = {
@@ -10,18 +9,14 @@ const ops = {
 
 function tokenize(text: string): Array<token> {
     return text.split(" ").map(x => {
-        console.log(x);
         if (Object.keys(ops).includes(x)) return x;
-        else return parseInt(x);
+        else return parseFloat(x);
     });
 }
-
-console.log(tokenize(text));
 
 const order = Object.entries(ops)
     .sort((a, b) => a[1] - b[1])
     .map(([x]) => x);
-console.log(order);
 
 type AST = {
     op: string;
@@ -66,5 +61,7 @@ function evaluate(ast: AST | number): number {
     );
 }
 
-console.log(parse(tokenize(text)));
-console.log(evaluate(parse(tokenize(text))));
+while (true) {
+    const inputText = prompt("Enter math expression:");
+    console.log(evaluate(parse(tokenize(inputText!))));
+}
