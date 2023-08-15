@@ -48,4 +48,23 @@ function parse(tokens: Array<token>): AST | number {
     return 0;
 }
 
+const operatorFuncs: {
+    [key: string]: (a: number, b: number) => number;
+} = {
+    "*": (a: number, b: number) => a * b,
+    "/": (a: number, b: number) => a / b,
+    "+": (a: number, b: number) => a + b,
+    "-": (a: number, b: number) => a - b,
+};
+
+function evaluate(ast: AST | number): number {
+    if (typeof ast === "number") return ast;
+
+    return operatorFuncs[ast.op](
+        evaluate(ast.operands[0]),
+        evaluate(ast.operands[1])
+    );
+}
+
 console.log(parse(tokenize(text)));
+console.log(evaluate(parse(tokenize(text))));
