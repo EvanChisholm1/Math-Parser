@@ -1,6 +1,9 @@
 type token = string | number;
 
 const ops = {
+    "(": 0,
+    ")": 0,
+    "^": 3,
     "*": 2,
     "/": 2,
     "-": 1,
@@ -23,8 +26,33 @@ type AST = {
     operands: Array<number | AST>;
 };
 
-function parse(tokens: Array<token>): AST | number {
+type parensList = Array<token | parensList>;
+
+function parens(tokens: parensList) {
+    const openings: number[] = [];
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i] === "(") openings.push(i);
+        if (tokens[i] === ")") {
+            const openerIndex = openings.pop()!;
+            const subArray = tokens.splice(openerIndex, i - openerIndex + 1);
+
+            tokens.splice(
+                openerIndex,
+                0,
+                subArray.filter(x => (x === "(" || x === ")" ? false : true))
+            );
+
+            i = openerIndex;
+        }
+    }
+    return tokens;
+}
+
+function parse(tokens: parensList): AST | number {
     if (tokens.length === 1 && typeof tokens[0] === "number") return tokens[0];
+    if (tokens.length === 1 && Array.isArray(tokens[0]))
+        return parse(tokens[0]);
+    // const tokensCp = console.log(parens(tokens.slice(0)));
 
     for (const op of order) {
         for (let i = tokens.length - 1; i >= 0; i--) {
@@ -50,6 +78,7 @@ const operatorFuncs: {
     "/": (a: number, b: number) => a / b,
     "+": (a: number, b: number) => a + b,
     "-": (a: number, b: number) => a - b,
+    "^": Math.pow,
 };
 
 function evaluate(ast: AST | number): number {
@@ -61,7 +90,9 @@ function evaluate(ast: AST | number): number {
     );
 }
 
+console.log(parens(tokenize("( 1 + 2 ) + 3")));
+
 while (true) {
     const inputText = prompt("Enter math expression:");
-    console.log(evaluate(parse(tokenize(inputText!))));
+    console.log(evaluate(parse(parens(tokenize(inputText!)))));
 }
