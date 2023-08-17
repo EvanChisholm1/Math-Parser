@@ -11,10 +11,26 @@ const ops = {
 };
 
 function tokenize(text: string): Array<token> {
-    return text.split(" ").map(x => {
-        if (Object.keys(ops).includes(x)) return x;
-        else return parseFloat(x);
-    });
+    const tokens = [];
+
+    let current = "";
+
+    for (const nextTok of text.split("")) {
+        if (nextTok === " ") continue;
+        else if (Object.keys(ops).includes(nextTok)) {
+            if (current !== "") {
+                tokens.push(parseFloat(current));
+                current = "";
+            }
+            tokens.push(nextTok);
+        } else {
+            current = `${current}${nextTok}`;
+        }
+    }
+
+    if (current !== "") tokens.push(parseFloat(current));
+
+    return tokens;
 }
 
 const order = Object.entries(ops)
@@ -52,7 +68,6 @@ function parse(tokens: parensList): AST | number {
     if (tokens.length === 1 && typeof tokens[0] === "number") return tokens[0];
     if (tokens.length === 1 && Array.isArray(tokens[0]))
         return parse(tokens[0]);
-    // const tokensCp = console.log(parens(tokens.slice(0)));
 
     for (const op of order) {
         for (let i = tokens.length - 1; i >= 0; i--) {
